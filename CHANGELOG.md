@@ -1,6 +1,6 @@
 # UNRELEASED
-<!-- Add CHANGELOG entry to this section for any PR awaiting the next release -->
-
+## Features
+* Add `OpaVersion` and `SentinelVersion` admin endpoints by @mrinalirao [#758](https://github.com/hashicorp/go-tfe/pull/758)
 
 # v1.32.0
 
