@@ -1,6 +1,12 @@
 # UNRELEASED
 ## Features
 * Add `OpaVersion` and `SentinelVersion` admin endpoints by @mrinalirao [#758](https://github.com/hashicorp/go-tfe/pull/758)
+* Removed beta tags for TeamProjectAccess by @rberecka [#756](https://github.com/hashicorp/go-tfe/pull/756)
+
+# v1.32.1
+
+## Dependency Update
+* Updated go-slug dependency to v0.12.1
 
 # v1.32.0
 
