@@ -621,6 +621,32 @@ func TestWorkspacesCreate(t *testing.T) {
 		assert.Equal(t, err, ErrRequiredAgentPoolID)
 	})
 
+	t.Run("when no execution mode is not specified in an organization with local as default execution mode", func(t *testing.T) {
+		// Remove the below organization creation and use the one from the outer scope once the feature flag is removed
+		orgTest, orgTestCleanup := createOrganizationWithOptions(t, client, OrganizationCreateOptions{
+			Name:                 String("tst-" + randomString(t)[0:20] + "-ff-on"),
+			Email:                String(fmt.Sprintf("%s@tfe.local", randomString(t))),
+			DefaultExecutionMode: String("local"),
+		})
+		t.Cleanup(orgTestCleanup)
+
+		options := WorkspaceCreateOptions{
+			Name: String(fmt.Sprintf("foo-%s", randomString(t))),
+			SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+				ExecutionMode: Bool(false),
+			},
+		}
+
+		_, err := client.Workspaces.Create(ctx, orgTest.Name, options)
+		require.NoError(t, err)
+
+		// Get a refreshed view from the API.
+		refreshed, err := client.Workspaces.Read(ctx, orgTest.Name, *options.Name)
+		require.NoError(t, err)
+
+		assert.Equal(t, "local", refreshed.ExecutionMode)
+	})
+
 	t.Run("when an error is returned from the API", func(t *testing.T) {
 		w, err := client.Workspaces.Create(ctx, "bar", WorkspaceCreateOptions{
 			Name:             String(fmt.Sprintf("bar-%s", randomString(t))),

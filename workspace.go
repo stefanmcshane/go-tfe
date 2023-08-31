@@ -116,43 +116,43 @@ type WorkspaceList struct {
 
 // Workspace represents a Terraform Enterprise workspace.
 type Workspace struct {
-	ID                         string                     `jsonapi:"primary,workspaces"`
-	Actions                    *WorkspaceActions          `jsonapi:"attr,actions"`
-	AgentPoolID                string                     `jsonapi:"attr,agent-pool-id"`
-	AllowDestroyPlan           bool                       `jsonapi:"attr,allow-destroy-plan"`
-	AssessmentsEnabled         bool                       `jsonapi:"attr,assessments-enabled"`
-	AutoApply                  bool                       `jsonapi:"attr,auto-apply"`
-	CanQueueDestroyPlan        bool                       `jsonapi:"attr,can-queue-destroy-plan"`
-	CreatedAt                  time.Time                  `jsonapi:"attr,created-at,iso8601"`
-	Description                string                     `jsonapi:"attr,description"`
-	Environment                string                     `jsonapi:"attr,environment"`
-	ExecutionMode              string                     `jsonapi:"attr,execution-mode"`
-	FileTriggersEnabled        bool                       `jsonapi:"attr,file-triggers-enabled"`
-	GlobalRemoteState          bool                       `jsonapi:"attr,global-remote-state"`
-	Locked                     bool                       `jsonapi:"attr,locked"`
-	MigrationEnvironment       string                     `jsonapi:"attr,migration-environment"`
-	Name                       string                     `jsonapi:"attr,name"`
-	Operations                 bool                       `jsonapi:"attr,operations"`
-	Permissions                *WorkspacePermissions      `jsonapi:"attr,permissions"`
-	QueueAllRuns               bool                       `jsonapi:"attr,queue-all-runs"`
-	SpeculativeEnabled         bool                       `jsonapi:"attr,speculative-enabled"`
-	SourceName                 string                     `jsonapi:"attr,source-name"`
-	SourceURL                  string                     `jsonapi:"attr,source-url"`
-	StructuredRunOutputEnabled bool                       `jsonapi:"attr,structured-run-output-enabled"`
-	TerraformVersion           string                     `jsonapi:"attr,terraform-version"`
-	TriggerPrefixes            []string                   `jsonapi:"attr,trigger-prefixes"`
-	TriggerPatterns            []string                   `jsonapi:"attr,trigger-patterns"`
-	VCSRepo                    *VCSRepo                   `jsonapi:"attr,vcs-repo"`
-	WorkingDirectory           string                     `jsonapi:"attr,working-directory"`
-	UpdatedAt                  time.Time                  `jsonapi:"attr,updated-at,iso8601"`
-	ResourceCount              int                        `jsonapi:"attr,resource-count"`
-	ApplyDurationAverage       time.Duration              `jsonapi:"attr,apply-duration-average"`
-	PlanDurationAverage        time.Duration              `jsonapi:"attr,plan-duration-average"`
-	PolicyCheckFailures        int                        `jsonapi:"attr,policy-check-failures"`
-	RunFailures                int                        `jsonapi:"attr,run-failures"`
-	RunsCount                  int                        `jsonapi:"attr,workspace-kpis-runs-count"`
-	TagNames                   []string                   `jsonapi:"attr,tag-names"`
-	SettingOverrides           *WorkspaceSettingOverrides `jsonapi:"attr,setting-overrides"`
+	ID                         string                      `jsonapi:"primary,workspaces"`
+	Actions                    *WorkspaceActions           `jsonapi:"attr,actions"`
+	AgentPoolID                string                      `jsonapi:"attr,agent-pool-id"`
+	AllowDestroyPlan           bool                        `jsonapi:"attr,allow-destroy-plan"`
+	AssessmentsEnabled         bool                        `jsonapi:"attr,assessments-enabled"`
+	AutoApply                  bool                        `jsonapi:"attr,auto-apply"`
+	CanQueueDestroyPlan        bool                        `jsonapi:"attr,can-queue-destroy-plan"`
+	CreatedAt                  time.Time                   `jsonapi:"attr,created-at,iso8601"`
+	Description                string                      `jsonapi:"attr,description"`
+	Environment                string                      `jsonapi:"attr,environment"`
+	ExecutionMode              string                      `jsonapi:"attr,execution-mode"`
+	FileTriggersEnabled        bool                        `jsonapi:"attr,file-triggers-enabled"`
+	GlobalRemoteState          bool                        `jsonapi:"attr,global-remote-state"`
+	Locked                     bool                        `jsonapi:"attr,locked"`
+	MigrationEnvironment       string                      `jsonapi:"attr,migration-environment"`
+	Name                       string                      `jsonapi:"attr,name"`
+	Operations                 bool                        `jsonapi:"attr,operations"`
+	Permissions                *WorkspacePermissions       `jsonapi:"attr,permissions"`
+	QueueAllRuns               bool                        `jsonapi:"attr,queue-all-runs"`
+	SpeculativeEnabled         bool                        `jsonapi:"attr,speculative-enabled"`
+	SourceName                 string                      `jsonapi:"attr,source-name"`
+	SourceURL                  string                      `jsonapi:"attr,source-url"`
+	StructuredRunOutputEnabled bool                        `jsonapi:"attr,structured-run-output-enabled"`
+	TerraformVersion           string                      `jsonapi:"attr,terraform-version"`
+	TriggerPrefixes            []string                    `jsonapi:"attr,trigger-prefixes"`
+	TriggerPatterns            []string                    `jsonapi:"attr,trigger-patterns"`
+	VCSRepo                    *VCSRepo                    `jsonapi:"attr,vcs-repo"`
+	WorkingDirectory           string                      `jsonapi:"attr,working-directory"`
+	UpdatedAt                  time.Time                   `jsonapi:"attr,updated-at,iso8601"`
+	ResourceCount              int                         `jsonapi:"attr,resource-count"`
+	ApplyDurationAverage       time.Duration               `jsonapi:"attr,apply-duration-average"`
+	PlanDurationAverage        time.Duration               `jsonapi:"attr,plan-duration-average"`
+	PolicyCheckFailures        int                         `jsonapi:"attr,policy-check-failures"`
+	RunFailures                int                         `jsonapi:"attr,run-failures"`
+	RunsCount                  int                         `jsonapi:"attr,workspace-kpis-runs-count"`
+	TagNames                   []string                    `jsonapi:"attr,tag-names"`
+	SettingOverwrites          *WorkspaceSettingOverwrites `jsonapi:"attr,setting-overwrites"`
 
 	// Relations
 	AgentPool                   *AgentPool            `jsonapi:"relation,agent-pool"`
@@ -203,6 +203,11 @@ type VCSRepo struct {
 	WebhookURL        string `jsonapi:"attr,webhook-url"`
 }
 
+type WorkspaceSettingOverwrites struct {
+	ExecutionMode *bool `jsonapi:"attr,execution-mode,omitempty"`
+	AgentPool     *bool `jsonapi:"attr,agent-pool,omitempty"`
+}
+
 // WorkspaceActions represents the workspace actions.
 type WorkspaceActions struct {
 	IsDestroyable bool `jsonapi:"attr,is-destroyable"`
@@ -222,11 +227,6 @@ type WorkspacePermissions struct {
 	CanUpdate         bool  `jsonapi:"attr,can-update"`
 	CanUpdateVariable bool  `jsonapi:"attr,can-update-variable"`
 	CanForceDelete    *bool `jsonapi:"attr,can-force-delete"` // pointer b/c it will be useful to check if this property exists, as opposed to having it default to false
-}
-
-type WorkspaceSettingOverrides struct {
-	ExecutionMode *bool `jsonapi:"attr,execution-mode,omitempty"`
-	AgentPool     *bool `jsonapi:"attr,agent-pool,omitempty"`
 }
 
 // WSIncludeOpt represents the available options for include query params.
@@ -392,7 +392,7 @@ type WorkspaceCreateOptions struct {
 	// For example: When setting the execution-mode of a workspace to  "default", the
 	// `setting-overwrites.execution-mode` field should be set to true, because the execution-mode
 	// will be overwritten by either the organization or project.
-	SettingOverrides *WorkspaceSettingOverrides `jsonapi:"attr,setting-overwrites,omitempty"`
+	SettingOverwrites *WorkspaceSettingOverwritesOptions `jsonapi:"attr,setting-overwrites,omitempty"`
 
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace.
@@ -408,6 +408,12 @@ type VCSRepoOptions struct {
 	OAuthTokenID      *string `json:"oauth-token-id,omitempty"`
 	TagsRegex         *string `json:"tags-regex,omitempty"`
 	GHAInstallationID *string `json:"github-app-installation-id,omitempty"`
+}
+
+type WorkspaceSettingOverwritesOptions struct {
+	// using `json` rather than `json-api` so that nil values are truly omitted. in `jsonapi` the json key will still be present
+	ExecutionMode *bool `json:"execution-mode,omitempty"`
+	AgentPool     *bool `json:"agent-pool,omitempty"`
 }
 
 // WorkspaceUpdateOptions represents the options for updating a workspace.
@@ -509,7 +515,7 @@ type WorkspaceUpdateOptions struct {
 	// For example: When setting the execution-mode of a workspace to  "default", the
 	// `setting-overwrites.execution-mode` field should be set to true, because the execution-mode
 	// will be overwritten by either the organization or project.
-	SettingOverrides *WorkspaceSettingOverrides `jsonapi:"attr,setting-overwrites,omitempty"`
+	SettingOverwrites *WorkspaceSettingOverwritesOptions `jsonapi:"attr,setting-overwrites,omitempty"`
 
 	// Associated Project with the workspace. If not provided, default project
 	// of the organization will be assigned to the workspace
