@@ -945,7 +945,7 @@ func createOrganizationWithDefaultAgentPool(t *testing.T, client *Client) (*Orga
 			DefaultExecutionMode: String("remote"),
 		})
 		if err != nil {
-			t.Errorf("Error destroying organization with default agent pool! Error occured when trying to\n"+
+			t.Errorf("Error destroying organization with default agent pool! Error occurred when trying to\n"+
 				"update the organization to use 'remote' execution mode as the default. WARNING: Dangling resources\n"+
 				"may exist! The full error is shown below.\n\n"+
 				"Organization: %s\nError: %s", org.Name, err)
