@@ -718,6 +718,51 @@ func TestWorkspacesCreate(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, options.TriggerPatterns, w.TriggerPatterns)
 	})
+
+	t.Run("when organization has a default execution mode", func(t *testing.T) {
+		defaultExecutionOrgTest, defaultExecutionOrgTestCleanup := createOrganizationWithDefaultAgentPool(t, client)
+		t.Cleanup(defaultExecutionOrgTestCleanup)
+
+		t.Run("with setting overwrites set to false, workspace inherits the default execution mode", func(t *testing.T) {
+			options := WorkspaceCreateOptions{
+				Name: String(fmt.Sprintf("tst-agent-cody-banks-%s", randomString(t))),
+				SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+					ExecutionMode: Bool(false),
+					AgentPool:     Bool(false),
+				},
+			}
+			w, err := client.Workspaces.Create(ctx, defaultExecutionOrgTest.Name, options)
+
+			require.NoError(t, err)
+			assert.Equal(t, "agent", w.ExecutionMode)
+		})
+
+		t.Run("with setting overwrites set to true, workspace ignores the default execution mode", func(t *testing.T) {
+			options := WorkspaceCreateOptions{
+				Name:          String(fmt.Sprintf("tst-agent-tony-tanks-%s", randomString(t))),
+				ExecutionMode: String("local"),
+				SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+					ExecutionMode: Bool(true),
+					AgentPool:     Bool(true),
+				},
+			}
+			w, err := client.Workspaces.Create(ctx, defaultExecutionOrgTest.Name, options)
+
+			require.NoError(t, err)
+			assert.Equal(t, "local", w.ExecutionMode)
+		})
+
+		t.Run("when explicitly setting execution mode, workspace ignores the default execution mode", func(t *testing.T) {
+			options := WorkspaceCreateOptions{
+				Name:          String(fmt.Sprintf("tst-remotely-interesting-workspace-%s", randomString(t))),
+				ExecutionMode: String("remote"),
+			}
+			w, err := client.Workspaces.Create(ctx, defaultExecutionOrgTest.Name, options)
+
+			require.NoError(t, err)
+			assert.Equal(t, "remote", w.ExecutionMode)
+		})
+	})
 }
 
 func TestWorkspacesRead(t *testing.T) {
@@ -739,6 +784,7 @@ func TestWorkspacesRead(t *testing.T) {
 		assert.NotEmpty(t, w.Actions)
 		assert.Equal(t, orgTest.Name, w.Organization.Name)
 		assert.NotEmpty(t, w.CreatedAt)
+		assert.NotEmpty(t, wTest.SettingOverwrites)
 	})
 
 	t.Run("links are properly decoded", func(t *testing.T) {
@@ -774,6 +820,33 @@ func TestWorkspacesRead(t *testing.T) {
 		w, err := client.Workspaces.Read(ctx, orgTest.Name, badIdentifier)
 		assert.Nil(t, w)
 		assert.EqualError(t, err, ErrInvalidWorkspaceValue.Error())
+	})
+
+	t.Run("when workspace is inheriting the default execution mode", func(t *testing.T) {
+		defaultExecutionOrgTest, defaultExecutionOrgTestCleanup := createOrganizationWithDefaultAgentPool(t, client)
+		t.Cleanup(defaultExecutionOrgTestCleanup)
+
+		options := WorkspaceCreateOptions{
+			Name: String(fmt.Sprintf("tst-agent-cody-banks-%s", randomString(t))),
+			SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+				ExecutionMode: Bool(false),
+				AgentPool:     Bool(false),
+			},
+		}
+
+		wDefaultTest, wDefaultTestCleanup := createWorkspaceWithOptions(t, client, defaultExecutionOrgTest, options)
+		t.Cleanup(wDefaultTestCleanup)
+
+		t.Run("and workspace execution mode is default", func(t *testing.T) {
+			w, err := client.Workspaces.Read(ctx, defaultExecutionOrgTest.Name, wDefaultTest.Name)
+			assert.NoError(t, err)
+			assert.NotEmpty(t, w)
+
+			assert.Equal(t, defaultExecutionOrgTest.DefaultExecutionMode, w.ExecutionMode)
+			assert.NotEmpty(t, w.SettingOverwrites)
+			assert.Equal(t, false, *w.SettingOverwrites.ExecutionMode)
+			assert.Equal(t, false, *w.SettingOverwrites.ExecutionMode)
+		})
 	})
 }
 
@@ -1464,6 +1537,54 @@ func TestWorkspacesUpdateByID(t *testing.T) {
 		w, err := client.Workspaces.UpdateByID(ctx, badIdentifier, WorkspaceUpdateOptions{})
 		assert.Nil(t, w)
 		assert.EqualError(t, err, ErrInvalidWorkspaceID.Error())
+	})
+}
+
+func TestWorkspacesUpdateWithDefaultExecutionMode(t *testing.T) {
+	client := testClient(t)
+	ctx := context.Background()
+
+	defaultExecutionOrgTest, defaultExecutionOrgTestCleanup := createOrganizationWithDefaultAgentPool(t, client)
+	t.Cleanup(defaultExecutionOrgTestCleanup)
+
+	wTest, wCleanup := createWorkspace(t, client, defaultExecutionOrgTest)
+	t.Cleanup(wCleanup)
+
+	t.Run("when explicitly setting execution mode, workspace ignores the default execution mode", func(t *testing.T) {
+		options := WorkspaceUpdateOptions{
+			ExecutionMode: String("remote"),
+		}
+		w, err := client.Workspaces.Update(ctx, defaultExecutionOrgTest.Name, wTest.Name, options)
+
+		require.NoError(t, err)
+		assert.Equal(t, "remote", w.ExecutionMode)
+	})
+
+	t.Run("with setting overwrites set to true, workspace ignores the default execution mode", func(t *testing.T) {
+		options := WorkspaceUpdateOptions{
+			ExecutionMode: String("local"),
+			SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+				ExecutionMode: Bool(true),
+				AgentPool:     Bool(true),
+			},
+		}
+		w, err := client.Workspaces.Update(ctx, defaultExecutionOrgTest.Name, wTest.Name, options)
+
+		require.NoError(t, err)
+		assert.Equal(t, "local", w.ExecutionMode)
+	})
+
+	t.Run("with setting overwrites set to false, workspace inherits the default execution mode", func(t *testing.T) {
+		options := WorkspaceUpdateOptions{
+			SettingOverwrites: &WorkspaceSettingOverwritesOptions{
+				ExecutionMode: Bool(false),
+				AgentPool:     Bool(false),
+			},
+		}
+		w, err := client.Workspaces.Update(ctx, defaultExecutionOrgTest.Name, wTest.Name, options)
+
+		require.NoError(t, err)
+		assert.Equal(t, "agent", w.ExecutionMode)
 	})
 }
 

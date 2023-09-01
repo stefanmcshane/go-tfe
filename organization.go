@@ -202,9 +202,6 @@ type OrganizationCreateOptions struct {
 
 	// Optional: DefaultExecutionMode the default execution mode for workspaces
 	DefaultExecutionMode *string `jsonapi:"attr,default-execution-mode,omitempty"`
-
-	// Optional: DefaultAgentPoolId default agent pool for workspaces, requires DefaultExecutionMode to be set to `agent`
-	DefaultAgentPoolId *string `jsonapi:"attr,default-agent-pool-id,omitempty"`
 }
 
 // OrganizationUpdateOptions represents the options for updating an organization.
@@ -244,6 +241,12 @@ type OrganizationUpdateOptions struct {
 
 	// Optional: AllowForceDeleteWorkspaces toggles behavior of allowing workspace admins to delete workspaces with resources under management.
 	AllowForceDeleteWorkspaces *bool `jsonapi:"attr,allow-force-delete-workspaces,omitempty"`
+
+	// Optional: DefaultExecutionMode the default execution mode for workspaces
+	DefaultExecutionMode *string `jsonapi:"attr,default-execution-mode,omitempty"`
+
+	// Optional: DefaultAgentPoolId default agent pool for workspaces, requires DefaultExecutionMode to be set to `agent`
+	DefaultAgentPool *AgentPool `jsonapi:"relation,default-agent-pool,omitempty"`
 }
 
 // ReadRunQueueOptions represents the options for showing the queue.

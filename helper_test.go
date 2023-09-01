@@ -920,6 +920,43 @@ func createOrganizationWithOptions(t *testing.T, client *Client, options Organiz
 	}
 }
 
+func createOrganizationWithDefaultAgentPool(t *testing.T, client *Client) (*Organization, func()) {
+	ctx := context.Background()
+	org, orgCleanup := createOrganizationWithOptions(t, client, OrganizationCreateOptions{
+		Name:                  String("tst-" + randomString(t)),
+		Email:                 String(fmt.Sprintf("%s@tfe.local", randomString(t))),
+		CostEstimationEnabled: Bool(true),
+	})
+
+	agentPool, agentPoolCleanup := createAgentPool(t, client, org)
+
+	org, err := client.Organizations.Update(ctx, org.Name, OrganizationUpdateOptions{
+		DefaultExecutionMode: String("agent"),
+		DefaultAgentPool:     agentPool,
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return org, func() {
+		// unset execution mode of organization
+		_, err := client.Organizations.Update(ctx, org.Name, OrganizationUpdateOptions{
+			DefaultExecutionMode: String("remote"),
+		})
+		if err != nil {
+			t.Errorf("Error destroying organization with default agent pool! Error occured when trying to\n"+
+				"update the organization to use 'remote' execution mode as the default. WARNING: Dangling resources\n"+
+				"may exist! The full error is shown below.\n\n"+
+				"Organization: %s\nError: %s", org.Name, err)
+		}
+
+		// delete agent pool
+		agentPoolCleanup()
+
+		orgCleanup()
+	}
+}
 func createOrganizationMembership(t *testing.T, client *Client, org *Organization) (*OrganizationMembership, func()) {
 	var orgCleanup func()
 
